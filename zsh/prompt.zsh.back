@@ -1,0 +1,225 @@
+# Modified from agnoster's Theme - https://gist.github.com/3712874
+#
+# # README
+#
+# # Goals
+#
+# The aim of this theme is to only show you *relevant* information. Like most
+# prompts, it will only show git information when in a git working directory.
+# However, it goes a step further: everything from the current user and
+# hostname to whether the last call exited with an error to whether background
+# jobs are running in this shell will all be displayed automatically when
+# appropriate.
+
+### Segment drawing
+# A few utility functions to make it easy and re-usable to draw segmented prompts
+
+CURRENT_BG='NONE'
+SEGMENT_SEPARATOR=''
+
+nl='
+'
+
+# Begin a segment
+# Takes two arguments, background and foreground. Both can be omitted,
+# rendering default background/foreground.
+prompt_segment() {
+  local fg bg
+  [[ -n $2 ]] && bg="%K{$2}" || bg="%k"
+  [[ -n $1 ]] && fg="%F{$1}" || fg="%f"
+  if [[ $CURRENT_BG != 'NONE' && $1 != $CURRENT_BG ]]; then
+    echo -n "%{$bg%F{$CURRENT_BG}%}$SEGMENT_SEPARATOR%{$fg%}"
+  else
+    echo -n "%{$bg%}%{$fg%} "
+  fi
+  CURRENT_BG=$1
+  [[ -n $3 ]] && echo -n $3
+}
+
+# End the prompt, closing any open segments
+prompt_end() {
+  if [[ -n $CURRENT_BG ]]; then
+    echo -n " %{%k%F{$CURRENT_BG}%}$SEGMENT_SEPARATOR"
+  else
+    echo -n "%{%k%}"
+  fi
+  echo -n "%{%f%}$newline"
+  newline=''
+  CURRENT_BG=''
+}
+
+### Prompt Helpers
+
+function box_name {
+    [ -f ~/.box-name ] && cat ~/.box-name || hostname -s
+}
+
+local newline=""
+
+### Prompt components
+# Each component will draw itself, and hide itself if no information needs to be shown
+
+# Context: user@hostname (who am I and where am I)
+ignore_usernames=(agreen uayeb)
+prompt_context() {
+  local user=`whoami`
+
+  # This next line uses array indexing to see if the element is missing:
+  # http://zshwiki.org/home/scripting/array
+  if [[ ${ignore_usernames[(i)${user}]} -eq 3 || -n "$SSH_CLIENT" ]]; then
+    prompt_segment green default "${user}"
+    prompt_segment 239 default "@"
+    prompt_segment blue default "$(box_name)"
+    prompt_segment 239 default ":"
+  fi
+}
+
+# Git: branch/detached head, dirty status
+prompt_git() {
+  if [[ -n $HAS_GIT ]]; then
+    local ref dirty mode repo_path
+    repo_path=$(git rev-parse --git-dir 2>/dev/null)
+
+    if $(git rev-parse --is-inside-work-tree >/dev/null 2>&1); then
+      newline="$nl "
+      dirty=$(parse_git_dirty)
+      ref=$(git symbolic-ref HEAD 2> /dev/null) || ref="➦ $(git show-ref --head -s --abbrev |head -n1 2> /dev/null)"
+      if [[ -n $dirty ]]; then
+        prompt_segment yellow black
+      else
+        prompt_segment green black
+      fi
+
+      if [[ -e "${repo_path}/BISECT_LOG" ]]; then
+        mode=" <B>"
+      elif [[ -e "${repo_path}/MERGE_HEAD" ]]; then
+        mode=" >M<"
+      elif [[ -e "${repo_path}/rebase" || -e "${repo_path}/rebase-apply" || -e "${repo_path}/rebase-merge" || -e "${repo_path}/../.dotest" ]]; then
+        mode=" >R>"
+      fi
+
+      setopt promptsubst
+      autoload -Uz vcs_info
+
+      zstyle ':vcs_info:*' enable git
+      zstyle ':vcs_info:*' get-revision true
+      zstyle ':vcs_info:*' check-for-changes true
+      zstyle ':vcs_info:*' stagedstr '✚'
+      zstyle ':vcs_info:git:*' unstagedstr '●'
+      zstyle ':vcs_info:*' formats ' %u%c'
+      zstyle ':vcs_info:*' actionformats ' %u%c'
+      vcs_info
+      echo -n " (git:${ref/refs\/heads\// }${vcs_info_msg_0_%% }${mode})"
+    fi
+  fi
+}
+
+prompt_hg() {
+  if [[ -n $HAS_HG ]]; then
+    local rev status
+    if $(hg id >/dev/null 2>&1); then
+      newline="$nl "
+      if $(hg prompt >/dev/null 2>&1); then
+        if [[ $(hg prompt "{status|unknown}") = "?" ]]; then
+          # if files are not added
+          prompt_segment red white
+          st='±'
+        elif [[ -n $(hg prompt "{status|modified}") ]]; then
+          # if any modification
+          prompt_segment yellow black
+          st='±'
+        else
+          # if working copy is clean
+          prompt_segment green black
+        fi
+        echo -n " (hg:" $(hg prompt "{rev}@{branch}") $st ")"
+      else
+        st=""
+        rev=$(hg id -n 2>/dev/null | sed 's/[^-0-9]//g')
+        branch=$(hg id -b 2>/dev/null)
+        if `hg st | grep -Eq "^\?"`; then
+          prompt_segment red black
+          st='±'
+        elif `hg st | grep -Eq "^(M|A)"`; then
+          prompt_segment yellow black
+          st='±'
+        else
+          prompt_segment green black
+        fi
+        echo -n " (hg:$rev@$branch" $st ")"
+      fi
+    fi
+  fi
+}
+
+prompt_fossil() {
+  local rev status
+  if [[ -n $HAS_FOSSIL ]]; then
+    if fossil status > /dev/null 2>&1; then
+      newline="$nl "
+      st=""
+      branch=`fossil branch|grep -e '^*'`
+      if [[ -n `fossil extras` ]]; then
+        prompt_segment red black
+        st='±'
+      elif [[ -n `fossil changes` ]]; then
+        prompt_segment yellow black
+        st='±'
+      else
+        prompt_segment green black
+      fi
+      echo -n " (fossil:$branch:s/* //" $st ")"
+    fi
+  fi
+}
+
+# Dir: current working directory
+prompt_dir() {
+
+  prompt_segment 202 black '%~'
+
+  if [[ `echo $(pwd | sed -e "s,^$HOME,~,")|wc -c` -gt 30 ]]; then
+    newline="$nl "
+  fi
+}
+
+# Virtualenv: current working virtualenv
+prompt_virtualenv() {
+  local virtualenv_path="$VIRTUAL_ENV"
+  if [[ -n $virtualenv_path && -n $VIRTUAL_ENV_DISABLE_PROMPT ]]; then
+    prompt_segment blue black " (`basename $virtualenv_path`)"
+  fi
+}
+
+# Status:
+# - was there an error
+# - am I root
+# - are there background jobs?
+prompt_status() {
+  RETVAL=$?
+  local symbols
+  symbols=()
+  [[ $RETVAL -ne 0 ]] && symbols+="%{%F{red}%}✘:$RETVAL"
+  [[ $UID -eq 0 ]] && symbols+="%{%F{yellow}%}⚡"
+  [[ $(jobs -l | wc -l) -gt 0 ]] && symbols+="%{%F{cyan}%}⚙"
+
+  [[ -n "$symbols" ]] && prompt_segment black default "$symbols"
+}
+
+## Main prompt
+build_prompt() {
+  RETVAL=$?
+  prompt_context
+  prompt_dir
+ # prompt_status
+ # prompt_virtualenv
+  prompt_git
+  prompt_hg
+  prompt_fossil
+  prompt_end
+}
+
+PROMPT='%{%f%b%k%}$(build_prompt)> '
+
+RPROMPT='%{%f%b%k%}$(prompt_status)'
+
