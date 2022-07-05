@@ -40,6 +40,7 @@ source $ZSH/oh-my-zsh.sh
 
 # Set up home for "workon" (part of virtualenvwrapper)
 if [[ -e $HOME/python/virtualenvs ]]; then
+    export VIRTUALENVWRAPPER_PYTHON=$(which python3)
     export WORKON_HOME="${HOME}/python/virtualenvs"
     source /usr/local/bin/virtualenvwrapper.sh
 fi
@@ -156,3 +157,11 @@ if (which fortune > /dev/null); then
     echo ""
     fortune
 fi
+
+# export NVM_DIR="$HOME/.nvm"
+# [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+# [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="$HOME/.sdkman"
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
