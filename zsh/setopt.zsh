@@ -10,3 +10,5 @@
 
 setopt NO_BEEP
 
+setopt promptsubst
+
