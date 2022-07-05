@@ -60,6 +60,13 @@ function box_name {
 
 local newline=" "
 
+
+# Prompt inline autocompletion:
+# https://github.com/zsh-users/zsh-autosuggestions
+if [[ -e /usr/local/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]]; then
+#  source /usr/local/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+fi
+
 ### Prompt components
 # Each component will draw itself, and hide itself if no information needs to be shown
 
@@ -193,7 +200,7 @@ prompt_dir() {
 
   prompt_segment orange black '%~'
 
-  if [[ `echo $(pwd | sed -e "s,^$HOME,~,")|wc -c` -gt 20 ]]; then
+  if [[ $(echo $(pwd | sed -e "s,^$HOME,~,")|$WC -m) -gt 20 ]]; then
     newline="$nl "
   fi
 }
@@ -215,6 +222,25 @@ prompt_virtualenv() {
   fi
 }
 
+# Current Java per JAVA_HOME
+prompt_javahome() {
+  if [[ -n $JAVA_HOME ]]; then
+    if [[ "${JAVA_HOME}" == *".sdkman"* ]]; then
+      if [[ "${JAVA_HOME}" != *"current"* ]]; then
+        java_version="$(basename ${JAVA_HOME})"
+      fi
+    else
+      java_version="$(echo $JAVA_HOME | cut -f 5 -d \/)"
+    fi
+  fi
+
+  if [[ -n "${java_version}" ]]; then
+      prompt_segment gray black " (java:"
+      prompt_segment blue black " `echo $java_version | cut -f 5 -d \/`"
+      prompt_segment gray black ")"
+  fi
+
+}
 
 
 # Status:
@@ -245,6 +271,7 @@ build_prompt() {
     prompt_fossil
   fi
   prompt_virtualenv
+  prompt_javahome
   prompt_end
 }
 

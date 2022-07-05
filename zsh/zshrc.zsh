@@ -81,6 +81,7 @@ source ~/.dotfiles/zsh/colors.zsh
 source ~/.dotfiles/zsh/prompt.zsh
 source ~/.dotfiles/zsh/completion.zsh
 source ~/.dotfiles/zsh/functions.zsh
+source ~/.dotfiles/zsh/setopt.zsh
 
 
 # Preferred editor for local and remote sessions
