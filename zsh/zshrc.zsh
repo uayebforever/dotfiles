@@ -123,6 +123,29 @@ if [[ -e ~/.zshlocal ]]; then
 fi 
 
 
+# Better cli utilities from rustlang ecosystem
+# from: https://relay.sh/blog/command-line-ux-in-2020/
+
+#   brew install exa
+[[ -f /usr/local/bin/exa ]] && alias ls=exa
+
+#   https://github.com/sharkdp/bat
+#      brew install bat
+[[ -f /usr/local/bin/bat ]] && alias cat=bat && alias less=bat
+
+
+RBIN=$HOME/.cargo/bin
+if [[ -d $RBIN ]]; then
+    # https://crates.io/crates/dua-cli
+    [[ -f $RBIN/dua ]] && alias du=dua
+    # https://github.com/palash25/wc-rs
+    [[ -f $RBIN/wc-rs ]] && alias wc=wc-rs
+    # https://crates.io/crates/ripgrep
+    #[[ -f $RBIN/rg  ]] && alias grep=rg
+    # https://crates.io/crates/fd-find
+    #[[ -f $RBIN/fd  ]] && alias find=fd
+fi
+
 
 # Custom Environment Stuff
 

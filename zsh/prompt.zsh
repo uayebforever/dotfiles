@@ -17,6 +17,8 @@
 CURRENT_BG='NONE'
 SEGMENT_SEPARATOR=''
 
+WC=/usr/bin/wc
+
 nl='
 '
 
@@ -225,7 +227,7 @@ prompt_status() {
   symbols=()
   [[ $RETVAL -ne 0 ]] && prompt_segment red black "✘:$RETVAL "
   #[[ $UID -eq 0 ]] && prompt_segment yellow black "⚡ "
-  [[ $(jobs -l | wc -l) -gt 0 ]] && prompt_segment cyan black "⚙ "
+  [[ $(jobs -l | $WC -l) -gt 0 ]] && prompt_segment cyan black "⚙ "
 
   #[[ -n "$symbols" ]] && prompt_segment white black "$symbols" && echo -n %{${reset_color}%}
    echo -n %{${reset_color}%}
