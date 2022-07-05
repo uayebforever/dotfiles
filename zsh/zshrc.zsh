@@ -15,7 +15,7 @@ export ZSH=$HOME/.dotfiles/oh-my-zsh
 
 plugins=(git mercurial pip sudo)
 if [ -n $IS_MAC ]; then
-	plugins=($plugins osx brew)
+	plugins=($plugins macos brew)
 fi
 if [ -n $HAS_APT ]; then
 	plugins=($plugins)
