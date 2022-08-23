@@ -211,7 +211,10 @@ prompt_virtualenv() {
   local virtualenv_path="$VIRTUAL_ENV"
   if [[ (-n $virtualenv_path && -n $VIRTUAL_ENV_DISABLE_PROMPT) || -n $PYTHONPATH ]]; then
     if [[ -n $virtualenv_path ]]; then
-      prompt_segment blue black " (`basename $virtualenv_path`"
+      if [[ $(basename $virtualenv_path) =~ ".?venv" ]]; then
+          virtualenv_path=$(dirname $virtualenv_path)
+        fi
+        prompt_segment blue black " (`basename $virtualenv_path`"
     else
       prompt_segment blue black " (sys-python"      
     fi
