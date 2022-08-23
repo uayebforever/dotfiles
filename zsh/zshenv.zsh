@@ -46,6 +46,10 @@ if [[ -e /Library/Frameworks/Python.framework/Versions/3.6/bin ]]; then
 fi
 
 
+# Sublime Setup
+if [[ -e "/Applications/Sublime Text.app/Contents/SharedSupport/bin" ]]; then
+    export PATH="${PATH}:/Applications/Sublime Text.app/Contents/SharedSupport/bin/"
+fi
 
 # Check for TeXLive:
 if [[ -e /usr/texbin ]]; then
