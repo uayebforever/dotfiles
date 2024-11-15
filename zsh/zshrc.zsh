@@ -13,7 +13,7 @@ export ZSH=$HOME/.dotfiles/oh-my-zsh
 
 #ZSH_THEME="agnoster"
 
-plugins=(git mercurial pip sudo)
+plugins=(git mercurial sudo)
 if [ -n $IS_MAC ]; then
 	plugins=($plugins macos brew)
 fi
@@ -158,10 +158,12 @@ if (which fortune > /dev/null); then
     fortune
 fi
 
-# export NVM_DIR="$HOME/.nvm"
-# [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-# [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 #THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
 export SDKMAN_DIR="$HOME/.sdkman"
 [[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+
+alias vertigo='$(git rev-parse --show-toplevel)/bin/vertigo'
