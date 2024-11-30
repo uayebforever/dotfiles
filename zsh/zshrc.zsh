@@ -39,7 +39,7 @@ source $ZSH/oh-my-zsh.sh
 
 
 # Set up home for "workon" (part of virtualenvwrapper)
-if [[ -e $HOME/python/virtualenvs ]]; then
+if [[ -e $HOME/python/virtualenvs ]] && [[ -e /usr/local/bin/virtualenvwrapper.sh ]]; then
     export WORKON_HOME="${HOME}/python/virtualenvs"
     source /usr/local/bin/virtualenvwrapper.sh
 fi

@@ -45,7 +45,11 @@ if [[ -e /Library/Frameworks/Python.framework/Versions/3.6/bin ]]; then
     alias python.org-3.6='export PATH="/Library/Frameworks/Python.framework/Versions/3.6/bin:${PATH}"; alias python=python3;'
 fi
 
-
+# Homebrew (newer /opt install)
+if [[ -f /opt/homebrew/bin/brew ]]; then
+    eval "$(/opt/homebrew/bin/brew shellenv)"
+    export HOMEBREW_NO_ANALYTICS=1
+fi
 
 # Check for TeXLive:
 if [[ -e /usr/texbin ]]; then
@@ -59,6 +63,10 @@ if [[ -e idl ]]; then
     export IDLUTILS_DIR="/Users/uayeb/idl/idlutils"
     export IDLSPEC2D_DIR="/Users/uayeb/idl/idlspec2d"
     export XIDL_DIR="/Users/uayeb/idl/xidl"
+fi
+
+if [[ -d "/Applications/Sublime Text.app/Contents/SharedSupport/bin" ]]; then
+    export PATH="$PATH:/Applications/Sublime Text.app/Contents/SharedSupport/bin"
 fi
 
 # Set up for OSIRIS data reduction system
