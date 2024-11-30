@@ -1,10 +1,20 @@
 #!/bin/zsh
 
-# `.zshenv' is sourced on all invocations of the shell, unless the -f
-# option is set.  It should contain commands to set the command search
-# path, plus other important environment variables. `.zshenv' should
-# not contain commands that produce output or assume the shell is
+# `.zprofile` is sourced on all login shells. 
+#
+# Note: `.zshenv' is sourced on all invocations of the shell, unless 
+# the -f  option is set.  It should contain commands to set the command 
+# search path, plus other important environment variables. `.zshenv' 
+# should not contain commands that produce output or assume the shell is
 # attached to a tty.
+#
+# Howerever, macOS doesn't fully respect this, instead configuring things
+# at the profile step instead of the environment step. As /etc/zprofile is
+# sourced after ``~/.zshenv`, anything in the latter will be overriden by
+# the former. See especially this write up: 
+#
+#    https://gist.github.com/Linerre/f11ad4a6a934dcf01ee8415c9457e7b2
+
 
 if [[ -s ~/.hostname ]]; then
     export HOSTNAME=`cat ~/.hostname`
