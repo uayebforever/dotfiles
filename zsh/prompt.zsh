@@ -37,7 +37,7 @@ prompt_segment() {
   # echo -n "%{${back}%}%{${fore}%}"
   #echo -n "%{$fg[$1]$bg[$2]%}"
   echo -n "%{$fg[$1]%}"
-  [[ -n $3 ]] && echo -n $3
+  [[ -n $3 ]] && echo -n $3 && echo -n %{${reset_color}%}
 }
 
 # End the prompt, closing any open segments
@@ -246,20 +246,23 @@ prompt_javahome() {
 }
 
 
+source ~/.dotfiles/zsh/prompt_time.zsh
+prompt_exectime(){
+  if [[ "$ZSH_EXEC_TIME" -ge "5.0" ]]; then
+    prompt_segment blue black "⌚︎$ZSH_EXEC_TIME "
+  fi
+}
+
 # Status:
 # - was there an error
 # - am I root
 # - are there background jobs?
 prompt_status() {
   RETVAL=$?
-  local symbols
-  symbols=()
+  prompt_exectime
   [[ $RETVAL -ne 0 ]] && prompt_segment red black "✘:$RETVAL "
-  #[[ $UID -eq 0 ]] && prompt_segment yellow black "⚡ "
+  [[ $UID -eq 0 ]] && prompt_segment yellow black "⚡ "
   [[ $(jobs -l | $WC -l) -gt 0 ]] && prompt_segment cyan black "⚙ "
-
-  #[[ -n "$symbols" ]] && prompt_segment white black "$symbols" && echo -n %{${reset_color}%}
-   echo -n %{${reset_color}%}
 }
 
 ## Main prompt
@@ -280,5 +283,5 @@ build_prompt() {
 
 PROMPT='$(build_prompt)> '
 
-RPROMPT='$(prompt_status)%{$reset_color%}'
+RPROMPT='$(prompt_status)'
 
