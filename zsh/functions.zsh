@@ -74,6 +74,9 @@ if [[ $IS_MAC -eq 1 ]]; then
     # view man pages in Preview
     pman() { ps=`mktemp -t manpageXXXX`.ps ; man -t $@ > "$ps" ; open "$ps" ; }
 
+    # View man pages in separate winow
+    wman() { if [ $# -eq 1 ] ; then open x-man-page://$1 ; elif [ $# -eq 2 ] ; then open x-man-page://$1/$2 ; fi }
+
     # function to show interface IP assignments
     ips() { foo=`/Users/mark/bin/getip.py; /Users/mark/bin/getip.py en0; /Users/mark/bin/getip.py en1`; echo $foo; }
 
@@ -125,3 +128,20 @@ function highlight()
 {
     sed "s/$1/`tput smso`&`tput rmso`/g" "${2:--}"
 }
+
+# function is_subdir_of {
+#   case $(readlink -f $1)/ in 
+#     $(readlink -f $2)/*) return 0;;
+#     *) return 1;;
+#   easc
+# }
+
+# -------------------------------------------------------------------
+# Function to performance test a command:
+#   see: https://unix.stackexchange.com/questions/29777/how-to-average-time-commands?rq=1
+# -------------------------------------------------------------------
+function timeit () {
+  python -m timeit "__import__('os').system('$1')" 
+}  
+
+alias bell="tput bel"

@@ -17,6 +17,8 @@
 CURRENT_BG='NONE'
 SEGMENT_SEPARATOR=''
 
+WC=/usr/bin/wc
+
 nl='
 '
 
@@ -35,7 +37,7 @@ prompt_segment() {
   # echo -n "%{${back}%}%{${fore}%}"
   #echo -n "%{$fg[$1]$bg[$2]%}"
   echo -n "%{$fg[$1]%}"
-  [[ -n $3 ]] && echo -n $3
+  [[ -n $3 ]] && echo -n $3 && echo -n %{${reset_color}%}
 }
 
 # End the prompt, closing any open segments
@@ -57,6 +59,13 @@ function box_name {
 }
 
 local newline=" "
+
+
+# Prompt inline autocompletion:
+# https://github.com/zsh-users/zsh-autosuggestions
+if [[ -e /usr/local/share/zsh-autosuggestions/zsh-autosuggestions.zsh ]]; then
+#  source /usr/local/share/zsh-autosuggestions/zsh-autosuggestions.zsh
+fi
 
 ### Prompt components
 # Each component will draw itself, and hide itself if no information needs to be shown
@@ -191,7 +200,7 @@ prompt_dir() {
 
   prompt_segment orange black '%~'
 
-  if [[ `echo $(pwd | sed -e "s,^$HOME,~,")|wc -c` -gt 20 ]]; then
+  if [[ $(echo $(pwd | sed -e "s,^$HOME,~,")|$WC -m) -gt 20 ]]; then
     newline="$nl "
   fi
 }
@@ -202,7 +211,10 @@ prompt_virtualenv() {
   local virtualenv_path="$VIRTUAL_ENV"
   if [[ (-n $virtualenv_path && -n $VIRTUAL_ENV_DISABLE_PROMPT) || -n $PYTHONPATH ]]; then
     if [[ -n $virtualenv_path ]]; then
-      prompt_segment blue black " (`basename $virtualenv_path`"
+      if [[ $(basename $virtualenv_path) =~ ".?venv" ]]; then
+          virtualenv_path=$(dirname $virtualenv_path)
+        fi
+        prompt_segment blue black " (`basename $virtualenv_path`"
     else
       prompt_segment blue black " (sys-python"      
     fi
@@ -213,7 +225,33 @@ prompt_virtualenv() {
   fi
 }
 
+# Current Java per JAVA_HOME
+prompt_javahome() {
+  if [[ -n $JAVA_HOME ]]; then
+    if [[ "${JAVA_HOME}" == *".sdkman"* ]]; then
+      if [[ "${JAVA_HOME}" != *"current"* ]]; then
+        java_version="$(basename ${JAVA_HOME})"
+      fi
+    else
+      java_version="$(echo $JAVA_HOME | cut -f 5 -d \/)"
+    fi
+  fi
 
+  if [[ -n "${java_version}" ]]; then
+      prompt_segment gray black " (java:"
+      prompt_segment blue black " `echo $java_version | cut -f 5 -d \/`"
+      prompt_segment gray black ")"
+  fi
+
+}
+
+
+source ~/.dotfiles/zsh/prompt_time.zsh
+prompt_exectime(){
+  if [[ "$ZSH_EXEC_TIME" -ge "5.0" ]]; then
+    prompt_segment blue black "⌚︎$ZSH_EXEC_TIME "
+  fi
+}
 
 # Status:
 # - was there an error
@@ -221,14 +259,10 @@ prompt_virtualenv() {
 # - are there background jobs?
 prompt_status() {
   RETVAL=$?
-  local symbols
-  symbols=()
+  prompt_exectime
   [[ $RETVAL -ne 0 ]] && prompt_segment red black "✘:$RETVAL "
-  #[[ $UID -eq 0 ]] && prompt_segment yellow black "⚡ "
-  [[ $(jobs -l | wc -l) -gt 0 ]] && prompt_segment cyan black "⚙ "
-
-  #[[ -n "$symbols" ]] && prompt_segment white black "$symbols" && echo -n %{${reset_color}%}
-   echo -n %{${reset_color}%}
+  [[ $UID -eq 0 ]] && prompt_segment yellow black "⚡ "
+  [[ $(jobs -l | $WC -l) -gt 0 ]] && prompt_segment cyan black "⚙ "
 }
 
 ## Main prompt
@@ -243,10 +277,11 @@ build_prompt() {
     prompt_fossil
   fi
   prompt_virtualenv
+  prompt_javahome
   prompt_end
 }
 
 PROMPT='$(build_prompt)> '
 
-RPROMPT='$(prompt_status)%{$reset_color%}'
+RPROMPT='$(prompt_status)'
 

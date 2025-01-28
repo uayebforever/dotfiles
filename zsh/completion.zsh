@@ -1,3 +1,17 @@
+# Add zsh-completions to the list of completions.
+if [[ -e /usr/local/share/zsh-completions ]]; then
+	fpath=(/usr/local/share/zsh-completions $fpath)
+fi
+
+if [[ ! -d ~/.zsh_completions ]]; then
+	mkdir ~/.zsh_completions
+fi
+fpath=(~/.zsh_completions $fpath)
+
+if which atlas > /dev/null; then
+	atlas --completion-script-zsh > ~/.zsh_completions/_atlas
+fi
+
 autoload -U compinit && compinit -u
 zmodload -i zsh/complist
 
@@ -58,3 +72,15 @@ zstyle ':completion:*:scp:*' group-order files all-files users hosts-domain host
 zstyle ':completion:*:ssh:*' tag-order users 'hosts:-host hosts:-domain:domain hosts:-ipaddr"IP\ Address *'
 zstyle ':completion:*:ssh:*' group-order hosts-domain hosts-host users hosts-ipaddr
 zstyle '*' single-ignored show
+
+
+###################################
+# Andy's custom completions below #
+
+# Git completions are special, and work like this:
+# https://coderwall.com/p/d2w7oa/auto-completion-within-complex-git-alias
+
+function _git_archivebranch() {
+  _git_branch
+}
+

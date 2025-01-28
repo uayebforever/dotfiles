@@ -13,9 +13,9 @@ export ZSH=$HOME/.dotfiles/oh-my-zsh
 
 #ZSH_THEME="agnoster"
 
-plugins=(git mercurial pip sudo)
+plugins=(git mercurial sudo)
 if [ -n $IS_MAC ]; then
-	plugins=($plugins osx brew)
+	plugins=($plugins macos brew)
 fi
 if [ -n $HAS_APT ]; then
 	plugins=($plugins)
@@ -81,7 +81,8 @@ source ~/.dotfiles/zsh/colors.zsh
 source ~/.dotfiles/zsh/prompt.zsh
 source ~/.dotfiles/zsh/completion.zsh
 source ~/.dotfiles/zsh/functions.zsh
-
+source ~/.dotfiles/zsh/setopt.zsh
+source ~/.dotfiles/zsh/hooks.zsh
 
 # Preferred editor for local and remote sessions
 if [[ -n $SSH_CONNECTION ]]; then
@@ -123,6 +124,29 @@ if [[ -e ~/.zshlocal ]]; then
 fi 
 
 
+# Better cli utilities from rustlang ecosystem
+# from: https://relay.sh/blog/command-line-ux-in-2020/
+
+#   brew install exa
+[[ -f /usr/local/bin/exa ]] && alias ls=exa
+
+#   https://github.com/sharkdp/bat
+#      brew install bat
+[[ -f /usr/local/bin/bat ]] && alias cat=bat && alias less=bat
+
+
+RBIN=$HOME/.cargo/bin
+if [[ -d $RBIN ]]; then
+    # https://crates.io/crates/dua-cli
+    [[ -f $RBIN/dua ]] && alias du=dua
+    # https://github.com/palash25/wc-rs
+    [[ -f $RBIN/wc-rs ]] && alias wc=wc-rs
+    # https://crates.io/crates/ripgrep
+    #[[ -f $RBIN/rg  ]] && alias grep=rg
+    # https://crates.io/crates/fd-find
+    #[[ -f $RBIN/fd  ]] && alias find=fd
+fi
+
 
 # Custom Environment Stuff
 
@@ -132,3 +156,13 @@ if (which fortune > /dev/null); then
     echo ""
     fortune
 fi
+
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+#THIS MUST BE AT THE END OF THE FILE FOR SDKMAN TO WORK!!!
+export SDKMAN_DIR="$HOME/.sdkman"
+[[ -s "$HOME/.sdkman/bin/sdkman-init.sh" ]] && source "$HOME/.sdkman/bin/sdkman-init.sh"
+
+alias vertigo='$(git rev-parse --show-toplevel)/bin/vertigo'
