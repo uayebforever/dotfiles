@@ -14,7 +14,9 @@
 # the former. See especially this write up: 
 #
 #    https://gist.github.com/Linerre/f11ad4a6a934dcf01ee8415c9457e7b2
-
+#
+# I typically "fix" this by just moving macOS's /etc/zprofile to /etc/zshenv
+#
 
 if [[ -s ~/.hostname ]]; then
     export HOSTNAME=`cat ~/.hostname`
@@ -116,3 +118,13 @@ if [[ -d $HOME/.cargo/bin ]]; then
     source "$HOME/.cargo/env"
 fi
 
+if [[ -d $HOME/.local/bin ]]; then
+    export PATH=$PATH:$HOME/.local/bin
+fi
+
+# Brew installed nvm
+if [[ -d /usr/local/opt/nvm ]]; then
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "/usr/local/opt/nvm/nvm.sh" ] && \. "/usr/local/opt/nvm/nvm.sh"  # This loads nvm
+    [ -s "/usr/local/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/usr/local/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+fi
